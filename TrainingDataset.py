@@ -23,6 +23,7 @@ class TestData(Dataset):
         self.num_samples = num_samples
         self.points_per_file = points_per_file
         self.data_paths = glob.glob(path_to_data + '/*.npz')
+        self.device = device
         print(self.data_paths)
         self.file_idx = 0
         self.data = np.load(self.data_paths[self.file_idx])
@@ -44,7 +45,7 @@ class TestData(Dataset):
             y.append([self.data["sample_set_y"][rel_idx]])
 
 
-        return torch.Tensor(np.array(x)), torch.Tensor(np.array(y))
+        return torch.Tensor(np.array(x)).to(self.device), torch.Tensor(np.array(y)).to(self.device)
 
     def __len__(self):
         return self.max_points // self.num_samples

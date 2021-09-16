@@ -31,7 +31,7 @@ def run_training(config):
         os.makedirs(data_directory)
     print(config)
     # Define neural process for functions...
-    neuralprocess = NeuralProcess(x_dim=8, y_dim=1, r_dim=r_dim, z_dim=z_dim, h_dim=h_dim)#.to(device)
+    neuralprocess = NeuralProcess(x_dim=8, y_dim=1, r_dim=r_dim, z_dim=z_dim, h_dim=h_dim).to(device)
     neuralprocess.training = True
 
 
@@ -41,7 +41,7 @@ def run_training(config):
                                       num_context_range=num_context_range,
                                       num_extra_target_range=num_extra_target_range, print_freq=1)
 
-    dataset = TestData(num_samples=500, points_per_file=10000, max_points=3000, path_to_data=data_directory, device=device)
+    dataset = TestData(num_samples=500, points_per_file=100000, max_points=500000, path_to_data=data_directory, device=device)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     print("starting training")
     # Train on your data
