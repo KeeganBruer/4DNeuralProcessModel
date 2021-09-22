@@ -1,4 +1,5 @@
 import torch
+import json
 from random import randint
 from neural_processes.neural_process import NeuralProcessImg
 from torch import nn
@@ -45,7 +46,7 @@ class NeuralProcessTrainer():
         self.steps = 0
         self.epoch_loss_history = []
 
-    def train(self, data_loader, epochs=None):
+    def train(self, data_loader, epochs=None, save_directory=None):
         """
         Trains Neural Process.
 
@@ -61,6 +62,7 @@ class NeuralProcessTrainer():
             epoch_count = epochs
         for epoch in range(epoch_count):
             epoch_loss = 0.
+            iteration_losses = []
             for i, data in enumerate(data_loader):
                 self.optimizer.zero_grad()
 
@@ -101,10 +103,18 @@ class NeuralProcessTrainer():
                 epoch_loss += loss.item()
 
                 self.steps += 1
+                iteration_losses.append("iteration {}, loss {}".format(self.steps, loss.item()))
 
                 if self.print_freq != None and self.steps % self.print_freq == 0:
                     print("iteration {}, loss {:.3f}".format(self.steps, loss.item()))
+                    if save_directory != None:
+                        with open(save_directory + '/losses.json'.format(epoch), 'w') as f:
+                            json.dump(iteration_losses, f, indent=4)
+                        torch.save(self.neural_process.state_dict(), save_directory + '/model.pt')
+                        
+
             self.avg_loss = epoch_loss / len(data_loader)
+            
             if(epochs != None):
                 print("Epoch: {0:3d}, Avg_loss: {1:3.4f}".format(epoch, epoch_loss / len(data_loader)), end="")
             self.epoch_loss_history.append(epoch_loss / len(data_loader))

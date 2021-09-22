@@ -41,17 +41,21 @@ def run_training(config):
                                       num_context_range=num_context_range,
                                       num_extra_target_range=num_extra_target_range, print_freq=1)
 
-    dataset = TestData(num_samples=500, points_per_file=100000, max_points=500000, path_to_data=data_directory, device=device)
+    dataset = TestData(num_samples=50, points_per_file=1000000, max_points=6000000, path_to_data=data_directory, device=device)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     print("starting training")
     # Train on your data
+    epoch_history = []
     for epoch in range(epochs):
         print("Epoch {0:3d}:".format(epoch + 1))
-        loss = np_trainer.train(data_loader)
-        print("Epoch {0:3d}, Loss: {1}".format(epoch + 1, loss))
+        if not os.path.exists(save_directory + "/epoch{}".format(epoch+1)):
+            os.makedirs(save_directory + "/epoch{}".format(epoch+1))
+        loss = np_trainer.train(data_loader, save_directory=save_directory+"/epoch{}".format(epoch+1))
+        epoch_history.append(loss)
+        print("Epoch {0:3d}, Loss: {1}".format(epoch + 1, loss["loss"]))
         # Save losses at every epoch
         with open(save_directory + '/losses.json', 'w') as f:
-            json.dump(np_trainer.epoch_loss_history, f, indent=4, cls=CustomJsonEncoder)
+            json.dump(epoch_history, f, indent=4, cls=CustomJsonEncoder)
         # Save model at every epoch
         torch.save(np_trainer.neural_process.state_dict(), save_directory + '/model.pt')
         torch.cuda.empty_cache()
