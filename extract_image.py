@@ -57,6 +57,14 @@ class ImageExtractor():
             y_target = p_y_pred.loc.detach().cpu()
             print(x_target[0][0])
             print(y_target[0][0])
+            graph_points = []
+            for i in range(len(x_target)):
+                point1 = x_target[i][0:3]
+                point2 = x_target[i][4:7]
+                distance = y_target[i][0]
+                midpoint = [(point1[0]+point2[0])* distance, (point1[1]+point2[1]) * distance, point1[2]+point2[2] * distance]
+                graph_points.append(point1)
+                graph_points.append(midpoint)
             fig = go.Figure()
             #fig.update_xaxes(range=[140, 190])
             #fig.update_traces(mode='markers')
@@ -64,6 +72,12 @@ class ImageExtractor():
                 x=[point[0] for point in points],
                 y=[point[1] for point in points],
                 z=[point[2] for point in points],
+                mode='markers',
+            ))
+            fig.add_trace(go.Scatter3d(
+                x=[point[0] for point in graph_points],
+                y=[point[1] for point in graph_points],
+                z=[point[2] for point in graph_points],
                 mode='markers',
             ))
             fig.show()
