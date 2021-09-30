@@ -38,33 +38,39 @@ class ImageExtractor():
         self.dataset = DataLoader(dataset, batch_size=1, shuffle=True)
 
     def extract_images(self):
+        width, height, time = 10, 10, 0.1
         for i, data in enumerate(self.dataset):
             x, y = data  # data is a tuple (img, label)
             x_context = x.to(device)
             y_context = y.to(device)
             x_target = []
-            width, height, time = 10, 10, 0
             view_distance = 1000
             origin = [0, -3, 0]
             world_q = [1, 0, 0, 0]
             points = convert_dataset(origin, width, height, view_distance, world_q)
+            points.append(origin)
             for point in points:
-                x_target.append([*origin, time, point, time])
+                x_target.append([*origin, time, *point, time])
+            x_target = [x_target]
             print(np.array(x_context.to(torch.device("cpu"))).shape)
+            print(np.array(x_target).shape)
             x_target = torch.Tensor(np.array(x_target)).to(device)
             p_y_pred = self.neural_process(x_context, y_context, x_target)
             
-            y_target = p_y_pred.loc.detach().cpu()
+            x_target = x_target.cpu().numpy()
+            y_target = p_y_pred.loc.detach().cpu().numpy()
             print(x_target[0][0])
             print(y_target[0][0])
             graph_points = []
-            for i in range(len(x_target)):
-                point1 = x_target[i][0:3]
-                point2 = x_target[i][4:7]
-                distance = y_target[i][0]
+            for i in range(len(x_target[0])):
+                point1 = x_target[0][i][0:3]
+                point2 = x_target[0][i][4:7]
+                distance = y_target[0][i][0]
+                print("point {} point {} distance {}".format(point1, point2, distance))
                 midpoint = [(point1[0]+point2[0])* distance, (point1[1]+point2[1]) * distance, point1[2]+point2[2] * distance]
                 graph_points.append(point1)
                 graph_points.append(midpoint)
+            print(len(graph_points))
             fig = go.Figure()
             #fig.update_xaxes(range=[140, 190])
             #fig.update_traces(mode='markers')
@@ -81,7 +87,7 @@ class ImageExtractor():
                 mode='markers',
             ))
             fig.show()
-            return 0
+            time += 0.1
 
 if __name__ == "__main__":
     config_path = input("config path (Press enter for default)>")
