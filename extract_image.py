@@ -64,9 +64,10 @@ class ImageExtractor():
             graph_points = []
             for i in range(len(x_target[0])):
                 point1 = x_target[0][i][0:3]
+                p_time = x_target[0][i][3]
                 point2 = x_target[0][i][4:7]
                 distance = y_target[0][i][0]
-                print("point {} point {} distance {}".format(point1, point2, distance))
+                print("point {} point {} p_time {} distance {}".format(point1, point2, p_time, distance))
                 midpoint = [(point1[0]+point2[0])* distance, (point1[1]+point2[1]) * distance, point1[2]+point2[2] * distance]
                 graph_points.append(point1)
                 graph_points.append(midpoint)

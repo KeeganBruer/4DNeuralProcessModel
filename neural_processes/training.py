@@ -65,7 +65,6 @@ class NeuralProcessTrainer():
             iteration_losses = []
             for i, data in enumerate(data_loader):
                 self.optimizer.zero_grad()
-
                 # Sample number of context and target points
                 num_context = randint(*self.num_context_range)
                 num_extra_target = randint(*self.num_extra_target_range)
@@ -90,7 +89,6 @@ class NeuralProcessTrainer():
                     _, y_target = img_mask_to_np_input(img, target_mask)
                 else:
                     x, y = data
-
                     x_context, y_context, x_target, y_target = \
                         context_target_split(x, y, num_context, num_extra_target)
                     p_y_pred, q_target, q_context = \

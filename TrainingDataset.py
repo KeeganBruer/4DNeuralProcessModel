@@ -41,11 +41,16 @@ class TestData(Dataset):
         for i in range(self.num_samples):
             ridx1 = round(random.random() * len(start_frame))
             ridx2 = round(random.random() * len(end_frame))
+            
             x.append(start_frame["sample_set_x"][ridx1])
-            y.append(start_frame["sample_set_y"][ridx1])
+            tmp_y = [end_frame["sample_set_y"][ridx1]]
+            y.append(tmp_y)
+
             x.append(end_frame["sample_set_x"][ridx2])
-            y.append(end_frame["sample_set_y"][ridx2])
-        print(len(y))
+            tmp_y = [end_frame["sample_set_y"][ridx2]]
+            #print(tmp_y) 
+            y.append(tmp_y)
+        
         return torch.Tensor(np.array(x)).to(self.device), torch.Tensor(np.array(y)).to(self.device)
 
     def __len__(self):
