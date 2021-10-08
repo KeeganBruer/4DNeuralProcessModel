@@ -41,7 +41,7 @@ def run_training(config):
                                       num_context_range=num_context_range,
                                       num_extra_target_range=num_extra_target_range, print_freq=1)
 
-    dataset = TestData(num_samples=400, points_per_file=1000000, max_points=6000000, path_to_data=data_directory, device=device)
+    dataset = TestData(num_samples=200, points_per_file=1000000, max_points=6000000, path_to_data=data_directory, device=device)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     print("starting training")
     # Train on your data
@@ -52,7 +52,7 @@ def run_training(config):
             os.makedirs(save_directory + "/epoch{}".format(epoch+1))
         loss = np_trainer.train(data_loader, save_directory=save_directory+"/epoch{}".format(epoch+1))
         epoch_history.append(loss)
-        print("Epoch {0:3d}, Loss: {1}".format(epoch + 1, loss["loss"]))
+        print("Epoch {0:3d}, Loss: {1}".format(epoch + 1, loss))
         # Save losses at every epoch
         with open(save_directory + '/losses.json', 'w') as f:
             json.dump(epoch_history, f, indent=4, cls=CustomJsonEncoder)

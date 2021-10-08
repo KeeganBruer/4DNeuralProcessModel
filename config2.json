@@ -8,6 +8,6 @@
   "num_extra_target_range": [0, 399],
   "lr": 4e-5,
   "epochs": 100,
-  "save_directory": "./results/epoch1",
+  "save_directory": "./results/epoch3",
   "data_directory": "./training_data"
 }

@@ -34,8 +34,11 @@ class ImageExtractor():
         self.neural_process = NeuralProcess(x_dim=8, y_dim=1, r_dim=r_dim, z_dim=z_dim, h_dim=h_dim).to(device)
         self.neural_process.load_state_dict(torch.load(self.save_directory + '/model.pt', map_location=lambda storage, loc: storage))
         self.neural_process.training = False
-        dataset = TestData(num_samples=50, points_per_file=10000, max_points=3000, path_to_data=self.data_directory, device=device)
+        dataset = TestData(num_samples=200, points_per_file=10000, max_points=3000, path_to_data=self.data_directory, device=device)
         self.dataset = DataLoader(dataset, batch_size=1, shuffle=True)
+
+        if not os.path.exists("images"):
+            os.mkdir("images")
 
     def extract_images(self):
         width, height, time = 10, 10, 0.1
@@ -67,11 +70,11 @@ class ImageExtractor():
                 p_time = x_target[0][i][3]
                 point2 = x_target[0][i][4:7]
                 distance = y_target[0][i][0]
-                print("point {} point {} p_time {} distance {}".format(point1, point2, p_time, distance))
+                #print("point {} point {} p_time {} distance {}".format(point1, point2, p_time, distance))
                 midpoint = [(point1[0]+point2[0])* distance, (point1[1]+point2[1]) * distance, point1[2]+point2[2] * distance]
                 graph_points.append(point1)
                 graph_points.append(midpoint)
-            print(len(graph_points))
+            #print(len(graph_points))
             fig = go.Figure()
             #fig.update_xaxes(range=[140, 190])
             #fig.update_traces(mode='markers')
@@ -87,7 +90,15 @@ class ImageExtractor():
                 z=[point[2] for point in graph_points],
                 mode='markers',
             ))
-            fig.show()
+            camera = dict(
+                up=dict(x=0, y=0, z=1),
+                center=dict(x=0, y=0, z=0),
+                eye=dict(x=-1.5, y=-1.5, z=.75)
+            )
+
+            fig.update_layout(scene_camera=camera, title="time: {0:0.3f}".format(time))
+            fig.write_image("images/frame_{0:0.3f}.png".format(time))
+            #fig.show()
             time += 0.1
 
 if __name__ == "__main__":
