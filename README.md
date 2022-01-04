@@ -2,8 +2,8 @@
 The model is formatted to match: <br>
 [x1, y1, z1, t1, x2, y2, z2, t2]=>[distance]
 
-x1, y1, z1, t1 :The first point
-x2, y2, z2, t2 :The second point
+x1, y1, z1, t1 :The first point <br>
+x2, y2, z2, t2 :The second point <br>
 distance       :The floating point percentage between the first and second points that the line intersects with an object
 
 <br>
