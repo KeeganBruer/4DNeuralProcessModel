@@ -1,4 +1,6 @@
 # Pulled From The Repository By [EmilienDupont](https://github.com/EmilienDupont/neural-processes)
+Adapted to use a custom decoder.
+
 # Neural Processes
 
 Pytorch implementation of [Neural Processes](https://arxiv.org/abs/1807.01622). This repo follows the

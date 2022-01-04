@@ -89,6 +89,12 @@ class Decoder(nn.Module):
     Maps target input x_target and samples z (encoding information about the
     context points) to predictions y_target.
 
+    TODO: replace the decoder neural network with a python function that assumes 
+    z describes a set of spheres moving in the space that the Kinect rays intersect with. 
+    
+    X then becomes the source point, ray direction and time 
+    Y is the closest intersection point of the ray and all the spheres.
+
     Parameters
     ----------
     x_dim : int
@@ -105,7 +111,7 @@ class Decoder(nn.Module):
     """
     def __init__(self, x_dim, z_dim, h_dim, y_dim):
         super(Decoder, self).__init__()
-
+        """ Old Code
         self.x_dim = x_dim
         self.z_dim = z_dim
         self.h_dim = h_dim
@@ -121,6 +127,7 @@ class Decoder(nn.Module):
         self.xz_to_hidden = nn.Sequential(*layers)
         self.hidden_to_mu = nn.Linear(h_dim, y_dim)
         self.hidden_to_sigma = nn.Linear(h_dim, y_dim)
+        """
 
     def forward(self, x, z):
         """
@@ -135,6 +142,8 @@ class Decoder(nn.Module):
         Returns mu and sigma for output distribution. Both have shape
         (batch_size, num_points, y_dim).
         """
+
+        """ Old Code
         batch_size, num_points, _ = x.size()
         # Repeat z, so it can be concatenated with every x. This changes shape
         # from (batch_size, z_dim) to (batch_size, num_points, z_dim)
@@ -154,3 +163,4 @@ class Decoder(nn.Module):
         # Process Objectives" and "Attentive Neural Processes"
         sigma = 0.1 + 0.9 * F.softplus(pre_sigma)
         return mu, sigma
+        """
