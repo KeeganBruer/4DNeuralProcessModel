@@ -111,12 +111,15 @@ class Decoder(nn.Module):
     """
     def __init__(self, x_dim, z_dim, h_dim, y_dim):
         super(Decoder, self).__init__()
-        """ Old Code
+        
         self.x_dim = x_dim
         self.z_dim = z_dim
         self.h_dim = h_dim
         self.y_dim = y_dim
 
+
+
+        """ Old Code
         layers = [nn.Linear(x_dim + z_dim, h_dim),
                   nn.ReLU(inplace=True),
                   nn.Linear(h_dim, h_dim),
@@ -142,6 +145,8 @@ class Decoder(nn.Module):
         Returns mu and sigma for output distribution. Both have shape
         (batch_size, num_points, y_dim).
         """
+
+
 
         """ Old Code
         batch_size, num_points, _ = x.size()
