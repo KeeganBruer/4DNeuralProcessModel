@@ -1,6 +1,9 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
+from ray_tracing import Ray, Sphere, get_intersection_distance
+
+
 
 
 class Encoder(nn.Module):
@@ -91,7 +94,11 @@ class Decoder(nn.Module):
 
     TODO: replace the decoder neural network with a python function that assumes 
     z describes a set of spheres moving in the space that the Kinect rays intersect with. 
-    
+    sphere: [x, y, z, v1, v2, v3]
+    Format: [sphere1, sphere2, ...]
+    Result: [sph1_x, sph1_y, sph1_z, sph1_v1, sph1_v2, sph1_v3, 
+            sph2_x, sph2_y, sph2_z, sph2_v1, sph2_v2, sph2_v3]
+
     X then becomes the source point, ray direction and time 
     Y is the closest intersection point of the ray and all the spheres.
 
@@ -116,21 +123,11 @@ class Decoder(nn.Module):
         self.z_dim = z_dim
         self.h_dim = h_dim
         self.y_dim = y_dim
+        self.z_sphere_dim = 6 #Defines the dimension of a single sphere
+        self.sphere_radius = 1 #assume a set sphere dimension
+        self.number_of_spheres = self.z_dim / self.z_sphere_dim
+        self.distance_error = 0.002 #Kinect Camera Error
 
-
-
-        """ Old Code
-        layers = [nn.Linear(x_dim + z_dim, h_dim),
-                  nn.ReLU(inplace=True),
-                  nn.Linear(h_dim, h_dim),
-                  nn.ReLU(inplace=True),
-                  nn.Linear(h_dim, h_dim),
-                  nn.ReLU(inplace=True)]
-
-        self.xz_to_hidden = nn.Sequential(*layers)
-        self.hidden_to_mu = nn.Linear(h_dim, y_dim)
-        self.hidden_to_sigma = nn.Linear(h_dim, y_dim)
-        """
 
     def forward(self, x, z):
         """
@@ -144,28 +141,52 @@ class Decoder(nn.Module):
         -------
         Returns mu and sigma for output distribution. Both have shape
         (batch_size, num_points, y_dim).
+        Mu:
+        Sigma:
+        Sigma is the standard deviation of the point, ie. how much error is in it.  
+        In this case, this represents the observation or measurement error. 
+            if it was true that the real Kinects are observing actual spheres 
+            flying through space, and X EXACTLY described these spheres, 
+            how much error is left in the answer?  
+        The Kinect has an observation error of less than 0.002 meters. 
+        We can use this as a constant standard deviation for any point produced by the decoder, 
+        just translate that distance into the dataset's normalized space.  
         """
-
-
-
-        """ Old Code
         batch_size, num_points, _ = x.size()
+        print(batch_size, num_points)
         # Repeat z, so it can be concatenated with every x. This changes shape
         # from (batch_size, z_dim) to (batch_size, num_points, z_dim)
         z = z.unsqueeze(1).repeat(1, num_points, 1)
         # Flatten x and z to fit with linear layer
         x_flat = x.view(batch_size * num_points, self.x_dim)
         z_flat = z.view(batch_size * num_points, self.z_dim)
-        # Input is concatenation of z with every row of x
-        input_pairs = torch.cat((x_flat, z_flat), dim=1)
-        hidden = self.xz_to_hidden(input_pairs)
-        mu = self.hidden_to_mu(hidden)
-        pre_sigma = self.hidden_to_sigma(hidden)
-        # Reshape output into expected shape
-        mu = mu.view(batch_size, num_points, self.y_dim)
-        pre_sigma = pre_sigma.view(batch_size, num_points, self.y_dim)
-        # Define sigma following convention in "Empirical Evaluation of Neural
-        # Process Objectives" and "Attentive Neural Processes"
-        sigma = 0.1 + 0.9 * F.softplus(pre_sigma)
+        mu_arr = []
+        sigma_arr = []
+        for i in range(0, len(x_flat)): #For Each Ray
+            x_in = x_flat[i]
+            z_in = z_flat[i]
+            ray = Ray(x_in[0:3], x_in[3], x_in[4:7])
+            closest_distance = None #Closest distance per ray
+            for j in range(0, len(z_in), 6): #Find closest intersection on every sphere
+                sph_center = z_in[j:j+3] #first three
+                sph_vec = z_in[j+3:j+6] #last three
+                sphere = Sphere(sph_center, self.sphere_radius, sph_vec)
+                dist = get_intersection_distance(ray, sphere)
+                if closest_distance == None or dist < closest_distance:
+                    closest_distance = dist
+            mu_arr.append(closest_distance.item())
+            sigma_arr.append(self.distance_error)
+        mu_tensor = torch.Tensor(mu_arr)
+        sigma_tensor = torch.Tensor(sigma_arr)
+        mu = mu_tensor.reshape(1, num_points, 1)
+        sigma = sigma_tensor.reshape(1, num_points, 1)
         return mu, sigma
-        """
+
+
+
+if (__name__ == "__main__"):
+    decoder = Decoder(7, 6, 0, 1)
+    x = torch.Tensor([[[0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 1, 0, 0]]])
+    z = torch.tensor([[5, 0, 0, 0, 0, 0]])
+    res = decoder.forward(x, z)
+    print(res)
