@@ -2,7 +2,7 @@
 The project's model is built to match the dataset: <br>
 
 
-| Model | [x1,y1,z1,t1,dir_x,dir_y,dir_z] => [distance] | 
+| Model | [x,y,z,t,dir_x,dir_y,dir_z] => [distance] | 
 | --------------- | ----------- |
 | x1,y1,z1,t1 | Origin of the ray  |
 | dir_x,dir_y,dir_z | Directional Vector of the ray |
