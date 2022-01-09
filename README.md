@@ -1,5 +1,5 @@
 # 4DNeuralProcessModel
-The model is formatted to match: <br>
+The project's model is built to match the dataset: <br>
 
 
 | Model | [x1,y1,z1,t1,x2,y2,z2,t2] => [distance] | 
