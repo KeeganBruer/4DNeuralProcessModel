@@ -2,10 +2,10 @@
 The project's model is built to match the dataset: <br>
 
 
-| Model | [x1,y1,z1,t1,x2,y2,z2,t2] => [distance] | 
+| Model | [x1,y1,z1,t1,dir_x,dir_y,dir_z] => [distance] | 
 | --------------- | ----------- |
 | x1,y1,z1,t1 | Origin of the ray  |
-| x2,y2,z2,t2 | The max point along the ray (endpoint) |
+| dir_x,dir_y,dir_z | Directional Vector of the ray |
 | distance    | A floating point number representing the percentage of the distance between the origin and endpoint that is where the ray intersects with an object. |
 
 
