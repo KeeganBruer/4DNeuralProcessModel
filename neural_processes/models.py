@@ -170,7 +170,7 @@ class Decoder(nn.Module):
             for j in range(0, len(z_in), 6): #Find closest intersection on every sphere
                 sph_center = z_in[j:j+3] #first three
                 sph_vec = z_in[j+3:j+6] #last three
-                sphere = Sphere(sph_center, self.sphere_radius, sph_vec)
+                sphere = Sphere(sph_center, self.sphere_radius, sph_vec).play_sphere_forward(ray.time)
                 dist = get_closest_intersection_distance(ray, sphere)
                 if closest_distance == None or dist < closest_distance:
                     closest_distance = dist
