@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from ray_tracing import Ray, Sphere, get_intersection_distance
+from ray_tracing.ray_tracing import Ray, Sphere, get_closest_intersection_distance
 
 
 
@@ -171,7 +171,7 @@ class Decoder(nn.Module):
                 sph_center = z_in[j:j+3] #first three
                 sph_vec = z_in[j+3:j+6] #last three
                 sphere = Sphere(sph_center, self.sphere_radius, sph_vec)
-                dist = get_intersection_distance(ray, sphere)
+                dist = get_closest_intersection_distance(ray, sphere)
                 if closest_distance == None or dist < closest_distance:
                     closest_distance = dist
             mu_arr.append(closest_distance.item())
