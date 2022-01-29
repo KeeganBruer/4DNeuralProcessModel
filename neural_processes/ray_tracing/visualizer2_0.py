@@ -15,9 +15,11 @@ class Visualize:
         self.fig, self.ax = plt.subplots()
         if (_type_ == "generate"):
             self.generate_rays_and_spheres()
+            self.build_frames_from_rays_and_spheres()
         elif (_type_ == "load"):
             self.import_rays_from_file(file)
-        self.build_frames_frome_rays_and_spheres()
+            self.build_frames_from_distance_rays()
+        
         anim = FuncAnimation(self.fig, self.animation_update, frames=np.arange(0, self.max_time), interval=1000/self.fps)
         if (save_animation):
             anim.save('test_anim.mp4', fps=fps, extra_args=['-vcodec', 'libx264'])
@@ -42,14 +44,18 @@ class Visualize:
         print(data.files)
         X = data['X']
         Y = data['Y']
+        self.width = data['width']
+        self.height = data['height']
+        self.max_time = data['total_frames']
+        self.ppi = data["ppi"]
         rays = []
         for i in range(0, len(X)):
             x = X[i]
             y = Y[i]
             rays.append(DistanceRay().from_dataset_format(x, y))
-        print(rays)
+        self.distance_rays = rays
 
-    def build_frames_frome_rays_and_spheres(self):
+    def build_frames_from_rays_and_spheres(self):
         self.ray_frames = []
         curr_spheres = self.spheres
         print(len(curr_spheres))
@@ -66,7 +72,45 @@ class Visualize:
             self.ray_frames.append(ray_frame)
         print("Finished Building Frames")
 
+    def build_frames_from_distance_rays(self):
+        self.ray_frames = []
+        curr_distance_rays = self.distance_rays
+        curr_distance_rays = sorted(
+            self.distance_rays, #array to sort
+            key=lambda ray: ray.time,#sort by time attr
+            reverse=False 
+        )
+       
+        ray_frame = []
+        curr_time = 0
+        for ray in curr_distance_rays:
+            if (ray.time > curr_time):
+                self.ray_frames.append(ray_frame)
+                ray_frame = []
+                curr_time = ray.time
+            ray_frame.append(ray)
+
+        for i in range(0, len(self.ray_frames)):
+            frame = self.ray_frames[i]
+            new_frame = [[None for x in range(self.width)] for y in range(self.height)] 
+            for ray in frame:
+                pos = ray.direction.make_axis(z=1)
+                x = round(pos.x * self.ppi) + round(self.width/2)
+                y = round(pos.y * self.ppi) + round(self.height/2)
+                new_frame[y][x] = ray
+            
+            for y in range(0, len(new_frame)):
+                for x in range(0, len(new_frame[y])):
+                    ray = new_frame[y][x]
+                    pos = ray.direction.make_axis(z=1)
+                    x1 = round(pos.x * self.ppi) + round(self.width/2)
+                    y1 = round(pos.y * self.ppi) + round(self.height/2)
+                    self.ray_frames[i][(x1 * self.width)+y1] = ray
+        print("Finished Building {} Frames".format(len(self.ray_frames)))
+     
+
     def animation_update(self, time):
+        print(time)
         img_data = np.zeros( (self.width, self.height, 3), dtype=np.uint8)
         ray_frame = self.ray_frames[time]
         for i in range(0, len(ray_frame)):

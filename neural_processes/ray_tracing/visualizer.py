@@ -65,5 +65,5 @@ def update(time):
     return ax
 
 fps = 2
-anim = FuncAnimation(fig, update, frames=np.arange(0, 10), interval=1000/fps)
+anim = FuncAnimation(fig, update, frames=np.arange(0, 30), interval=1000/fps)
 anim.save('test_anim.mp4', fps=fps, extra_args=['-vcodec', 'libx264'])

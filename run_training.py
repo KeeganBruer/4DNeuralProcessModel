@@ -8,7 +8,7 @@ from PIL import Image
 import numpy as np
 import os
 from CustomJsonEncoder import CustomJsonEncoder
-from TrainingDataset import TestData
+from CustomDecoderDataset import TestData
 
 import sys
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -31,7 +31,7 @@ def run_training(config):
         os.makedirs(data_directory)
     print(config)
     # Define neural process for functions...
-    neuralprocess = NeuralProcess(x_dim=8, y_dim=1, r_dim=r_dim, z_dim=z_dim, h_dim=h_dim).to(device)
+    neuralprocess = NeuralProcess(x_dim=7, y_dim=1, r_dim=100, z_dim=12, h_dim=4).to(device)
     neuralprocess.training = True
 
 
@@ -41,7 +41,7 @@ def run_training(config):
                                       num_context_range=num_context_range,
                                       num_extra_target_range=num_extra_target_range, print_freq=1)
 
-    dataset = TestData(num_samples=200, points_per_file=1000000, max_points=6000000, path_to_data=data_directory, device=device)
+    dataset = TestData(path_to_data=data_directory, device=device)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     print("starting training")
     # Train on your data

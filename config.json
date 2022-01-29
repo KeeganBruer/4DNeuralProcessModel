@@ -7,7 +7,7 @@
   "num_context_range": [3, 199],
   "num_extra_target_range": [0, 199],
   "lr": 4e-5,
-  "epochs": 100,
+  "epochs": 500,
   "save_directory": "./results",
-  "data_directory": "./training_data"
+  "data_directory": "./training_data/dataset_out.npz"
 }

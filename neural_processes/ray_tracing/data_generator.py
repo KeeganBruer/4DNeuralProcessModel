@@ -4,10 +4,10 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 from ray_tracing import Ray, DistanceRay, Sphere, get_closest_intersection_distance
 
-
-width = 100
-height = 100
-ppi = 30
+total_frames = 30
+width = 500
+height = 500
+ppi = 50
 ray_max_dist = 10
 rays = []
 spheres = []
@@ -22,15 +22,17 @@ spheres.append(Sphere([4, 0, 5], 1, [0, -0.1, -1]))
 
 ray_frames = []
 curr_spheres = spheres[:]
-for t in range(0, 10):
+for t in range(0, total_frames+1):
     ray_frame = []
     for i in range(0, len(rays)):
-        ray = DistanceRay(ray=rays[i], time=t, distance=ray_max_dist)
+        ray = DistanceRay(ray=rays[i], time=t, distance=None)
         for j in range(0, len(spheres)):
-            curr_spheres[j] = curr_spheres[j].play_sphere_forward(1)
-            dist = get_closest_intersection_distance(ray, curr_spheres[j])
+            sphere = curr_spheres[j].play_sphere_forward(t)
+            dist = get_closest_intersection_distance(ray, sphere)
             if dist != None and (ray.distance == None or dist < ray.distance):
                 ray.distance = dist
+        if (ray.distance == None):
+            ray.distance = 0
         ray_frame.append(ray)
     ray_frames.append(ray_frame)
 
@@ -43,7 +45,14 @@ for i in range(0, len(ray_frames)):
         x, y = ray_frame[j].to_dataset_format()
         X.append(x)
         Y.append(y)
-np.savez_compressed("dataset_out.npz", X=X, Y=Y)
+np.savez_compressed(
+    "dataset_out.npz", 
+    X=X, Y=Y, 
+    width=width, 
+    height=height,
+    total_frames=total_frames,
+    ppi=ppi
+)
 
 """
 depth_data = np.zeros( (width, height, 1), dtype=np.uint8)

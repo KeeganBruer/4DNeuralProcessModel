@@ -34,6 +34,12 @@ class Vector3:
         y = self.y / length
         z = self.z / length
         return Vector3(x, y, z)
+    def make_axis(self, x=None, y=None, z=None):
+        if z != None:
+            ratio = z / self.z
+            new_x = self.x * ratio
+            new_y = self.y * ratio
+            return Vector3(new_x, new_y, z)
     def toArray(self):
         return [self.x, self.y, self.z]
     def __repr__(self):
@@ -115,7 +121,7 @@ class Sphere:
     def __repr__(self):
         return [*self.origin, *self.velocity]
     def __str__(self):
-        return "center:({0},{1},{2}) radius:{3} vel:({4},{5},{6})".format(*self.center, self.radius, *self.velocity)
+        return "center:({0}) radius:{1} vel:({2})".format(self.center, self.radius, self.velocity)
 
 
 def get_sphere_interections(ray, sphere):

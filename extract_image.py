@@ -11,7 +11,7 @@ import numpy as np
 import os
 import math
 from CustomJsonEncoder import CustomJsonEncoder
-from TrainingDataset import TestData
+from CustomDecoderDataset import TestData
 from Dataset_converter import convert_dataset
 
 import plotly.express as px
@@ -31,11 +31,11 @@ class ImageExtractor():
         epochs = config["epochs"]
         self.save_directory = config["save_directory"]
         self.data_directory = config["data_directory"]
-        self.neural_process = NeuralProcess(x_dim=8, y_dim=1, r_dim=r_dim, z_dim=z_dim, h_dim=h_dim).to(device)
+        self.neural_process = NeuralProcess(x_dim=7, y_dim=1, r_dim=100, z_dim=12, h_dim=4).to(device)
         self.neural_process.load_state_dict(torch.load(self.save_directory + '/model.pt', map_location=lambda storage, loc: storage))
         self.neural_process.training = False
-        dataset = TestData(num_samples=200, points_per_file=10000, max_points=3000, path_to_data=self.data_directory, device=device)
-        self.dataset = DataLoader(dataset, batch_size=1, shuffle=True)
+        self.dataset_ref = TestData(path_to_data=self.data_directory, device=device)
+        self.dataset = DataLoader(self.dataset_ref, batch_size=1, shuffle=True)
 
         if not os.path.exists("images"):
             os.mkdir("images")
@@ -46,11 +46,27 @@ class ImageExtractor():
             x, y = data  # data is a tuple (img, label)
             x_context = x.to(device)
             y_context = y.to(device)
-            x_target = []
-            view_distance = 1000
-            origin = [0, -3, 0]
-            world_q = [1, 0, 0, 0]
-            points = convert_dataset(origin, width, height, view_distance, world_q)
+            #print(x_context)
+            for batch_i in range(0, len(x_context.tolist())):
+                batch = x_context.tolist()[batch_i]
+                #y_batch = y_context.tolist()[batch_i]
+                #for ray_i in range(0, len(batch)):
+                #    print(batch[ray_i], y_batch[ray_i])
+                x_target = x_context
+                p_y_pred = self.neural_process(x_context, y_context, x_target)
+                for ray_i in range(0, len(batch)):
+                    print(batch[ray_i], p_y_pred[ray_i])
+                '''
+                np.savez_compressed(
+                    "extracted_rays.npz", 
+                    X=batch, Y=y_batch, 
+                    width=self.dataset_ref.width, 
+                    height=self.dataset_ref.height,
+                    total_frames=self.dataset_ref.total_frames,
+                    ppi=self.dataset_ref.ppi
+                )
+                '''
+            return
             points.append(origin)
             for point in points:
                 x_target.append([*origin, time, *point, time])
@@ -62,44 +78,7 @@ class ImageExtractor():
             
             x_target = x_target.cpu().numpy()
             y_target = p_y_pred.loc.detach().cpu().numpy()
-            print(x_target[0][0])
-            print(y_target[0][0])
-            graph_points = []
-            for i in range(len(x_target[0])):
-                point1 = x_target[0][i][0:3]
-                p_time = x_target[0][i][3]
-                point2 = x_target[0][i][4:7]
-                distance = y_target[0][i][0]
-                #print("point {} point {} p_time {} distance {}".format(point1, point2, p_time, distance))
-                midpoint = [(point1[0]+point2[0])* distance, (point1[1]+point2[1]) * distance, point1[2]+point2[2] * distance]
-                graph_points.append(point1)
-                graph_points.append(midpoint)
-            #print(len(graph_points))
-            fig = go.Figure()
-            #fig.update_xaxes(range=[140, 190])
-            #fig.update_traces(mode='markers')
-            fig.add_trace(go.Scatter3d(
-                x=[point[0] for point in points],
-                y=[point[1] for point in points],
-                z=[point[2] for point in points],
-                mode='markers',
-            ))
-            fig.add_trace(go.Scatter3d(
-                x=[point[0] for point in graph_points],
-                y=[point[1] for point in graph_points],
-                z=[point[2] for point in graph_points],
-                mode='markers',
-            ))
-            camera = dict(
-                up=dict(x=0, y=0, z=1),
-                center=dict(x=0, y=0, z=0),
-                eye=dict(x=-1.5, y=-1.5, z=.75)
-            )
-
-            fig.update_layout(scene_camera=camera, title="time: {0:0.3f}".format(time))
-            fig.write_image("images/frame_{0:0.3f}.png".format(time))
-            #fig.show()
-            time += 0.1
+            print(x_target)
 
 if __name__ == "__main__":
     config_path = input("config path (Press enter for default)>")
