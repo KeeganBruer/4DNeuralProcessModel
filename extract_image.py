@@ -41,31 +41,42 @@ class ImageExtractor():
             os.mkdir("images")
 
     def extract_images(self):
-        width, height, time = 10, 10, 0.1
+        width, height, time = self.dataset_ref.width, self.dataset_ref.height, 0.1
         for i, data in enumerate(self.dataset):
             x, y = data  # data is a tuple (img, label)
             x_context = x.to(device)
             y_context = y.to(device)
+            x_out = []
+            y_out = []
             #print(x_context)
             for batch_i in range(0, len(x_context.tolist())):
                 batch = x_context.tolist()[batch_i]
-                #y_batch = y_context.tolist()[batch_i]
-                #for ray_i in range(0, len(batch)):
-                #    print(batch[ray_i], y_batch[ray_i])
-                x_target = x_context
-                p_y_pred = self.neural_process(x_context, y_context, x_target)
-                for ray_i in range(0, len(batch)):
-                    print(batch[ray_i], p_y_pred[ray_i])
-                '''
+                batch_y = y_context.tolist()[batch_i]
+                for t in range(0, len(batch), width*height):
+                    frame = batch[t:t+(width*height)]
+                    frame_y = batch_y[t:t+(width*height)]
+                    print("frame length ", len(frame))
+                    p_y_pred = self.neural_process(
+                        torch.Tensor([frame]).to(device), 
+                        torch.Tensor([frame_y]).to(device), 
+                        torch.Tensor([frame]).to(device)
+                    )
+                    y_target = p_y_pred.loc.detach().cpu().numpy()
+                    y_target = y_target[0]
+                    for ray_i in range(0, len(frame)):
+                        x_out.append(frame[ray_i])
+                        y_out.append(y_target[ray_i][0])
+                        #print(frame[ray_i], y_target[ray_i])
+                
                 np.savez_compressed(
                     "extracted_rays.npz", 
-                    X=batch, Y=y_batch, 
+                    X=x_out, Y=y_out, 
                     width=self.dataset_ref.width, 
                     height=self.dataset_ref.height,
                     total_frames=self.dataset_ref.total_frames,
                     ppi=self.dataset_ref.ppi
                 )
-                '''
+                
             return
             points.append(origin)
             for point in points:

@@ -76,10 +76,16 @@ class DistanceRay(Ray):
             self.direction = ray.direction
         if origin != None:
             self.origin = origin
+        elif (ray == None):
+            self.origin = Vector3(0, 0, 0)
         if time != None:
             self.time = time
+        elif (ray == None):
+            self.time = 0
         if direction != None:
             self.direction = direction
+        elif (ray == None):
+            self.direction = Vector3(0, 0, 1)
         self.distance = distance
     def to_dataset_format(self):
         return [

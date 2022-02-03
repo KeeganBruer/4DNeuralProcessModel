@@ -11,7 +11,7 @@ class Visualize:
         self.ppi = 10
         self.ray_max_dist = 10
         self.max_time = 30
-        self.fps = 5
+        self.fps = .5
         self.fig, self.ax = plt.subplots()
         if (_type_ == "generate"):
             self.generate_rays_and_spheres()
@@ -21,8 +21,8 @@ class Visualize:
             self.build_frames_from_distance_rays()
         
         anim = FuncAnimation(self.fig, self.animation_update, frames=np.arange(0, self.max_time), interval=1000/self.fps)
-        if (save_animation):
-            anim.save('test_anim.mp4', fps=fps, extra_args=['-vcodec', 'libx264'])
+        if (save_animation != False):
+            anim.save(save_animation, fps=self.fps, extra_args=['-vcodec', 'libx264'])
         if (show):
             plt.show()
 
@@ -49,9 +49,11 @@ class Visualize:
         self.max_time = data['total_frames']
         self.ppi = data["ppi"]
         rays = []
+        #print("eh")
         for i in range(0, len(X)):
             x = X[i]
             y = Y[i]
+            #print(x, y)
             rays.append(DistanceRay().from_dataset_format(x, y))
         self.distance_rays = rays
 
@@ -92,16 +94,18 @@ class Visualize:
 
         for i in range(0, len(self.ray_frames)):
             frame = self.ray_frames[i]
-            new_frame = [[None for x in range(self.width)] for y in range(self.height)] 
+            new_frame = [[DistanceRay() for x in range(self.width )] for y in range(self.height)] 
             for ray in frame:
                 pos = ray.direction.make_axis(z=1)
                 x = round(pos.x * self.ppi) + round(self.width/2)
                 y = round(pos.y * self.ppi) + round(self.height/2)
+                #print(ray, [x, y])
                 new_frame[y][x] = ray
             
             for y in range(0, len(new_frame)):
                 for x in range(0, len(new_frame[y])):
                     ray = new_frame[y][x]
+                    #print(ray)
                     pos = ray.direction.make_axis(z=1)
                     x1 = round(pos.x * self.ppi) + round(self.width/2)
                     y1 = round(pos.y * self.ppi) + round(self.height/2)
@@ -147,4 +151,9 @@ class Visualize:
         return self.ax
 
 
-Visualize(_type_="load", file="dataset_out.npz")
+Visualize(
+    _type_="load", 
+    file="D:\\Workspace\\Research\\4DNeuralProcessModel\\extracted_rays.npz",
+    save_animation="D:\\Workspace\\Research\\4DNeuralProcessModel\\extracted_animation.mp4",
+    show=True
+)
