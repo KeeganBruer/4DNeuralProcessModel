@@ -31,7 +31,7 @@ def run_training(config):
         os.makedirs(data_directory)
     print(config)
     # Define neural process for functions...
-    neuralprocess = NeuralProcess(x_dim=7, y_dim=1, r_dim=100, z_dim=12, h_dim=4).to(device)
+    neuralprocess = NeuralProcess(x_dim=7, y_dim=1, r_dim=12, z_dim=12, h_dim=4).to(device)
     neuralprocess.training = True
 
 

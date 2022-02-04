@@ -123,7 +123,14 @@ class Sphere:
         y = center.y + (vel.y * t)
         z = center.z + (vel.z * t)
         return Sphere([x, y, z], self.radius, vel.toArray())
-
+    def get_error_from(self, other_sphere):
+    	error = {"center":[], "velocity":[]}
+    	error["center"] = self.center - other_sphere.center
+    	error["center_error_length"] = error["center"].length()
+    	error["velocity"] = self.velocity - other_sphere.velocity
+    	error["velocity_error_length"] = error["velocity"].length()
+    	
+    	return error
     def __repr__(self):
         return [*self.origin, *self.velocity]
     def __str__(self):

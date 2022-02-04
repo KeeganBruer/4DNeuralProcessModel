@@ -1,8 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from neural_processes.ray_tracing.ray_tracing import Ray, Sphere, get_closest_intersection_distance
-
+from neural_processes.DecoderGradFunction import DecoderGradFunction
 
 
 
@@ -127,6 +126,9 @@ class Decoder(nn.Module):
         self.sphere_radius = 1 #assume a set sphere dimension
         self.number_of_spheres = self.z_dim / self.z_sphere_dim
         self.distance_error = 0.002 #Kinect Camera Error
+        
+        DecoderGradFunction.set_params(self.x_dim, self.sphere_radius, self.distance_error)
+        self.propogation_functions = DecoderGradFunction.apply
 
 
     def forward(self, x, z):
@@ -152,41 +154,13 @@ class Decoder(nn.Module):
         We can use this as a constant standard deviation for any point produced by the decoder, 
         just translate that distance into the dataset's normalized space.  
         """
-        batch_size, num_points, _ = x.size()
-        print(batch_size, num_points)
-        # Repeat z, so it can be concatenated with every x. This changes shape
-        # from (batch_size, z_dim) to (batch_size, num_points, z_dim)
-        z = z.unsqueeze(1).repeat(1, num_points, 1)
-        # Flatten x and z to fit with linear layer
-        x_flat = x.view(batch_size * num_points, self.x_dim)
-        z_flat = z.view(batch_size * num_points, self.z_dim)
+
+        #print(batch_size, num_points)
+        #z.backward(torch.Tensor([[1 for x in range(0, 12)]]).to(z.device), retain_graph=True)
         
-        mu_arr = []
-        sigma_arr = []
-        for i in range(0, len(x_flat)): #For Each Ray
-            x_in = x_flat[i].tolist()
-            z_in = z_flat[i].tolist()
-            ray = Ray(x_in[0:3], x_in[3], x_in[4:7])
-            closest_distance = None #Closest distance per ray
-            for j in range(0, len(z_in), 6): #Find closest intersection on every sphere
-                sph_center = z_in[j:j+3] #first three
-                sph_vec = z_in[j+3:j+6] #last three
-                sphere = Sphere(sph_center, self.sphere_radius, sph_vec).play_sphere_forward(ray.time)
-                dist = get_closest_intersection_distance(ray, sphere)
-                if closest_distance == None or (dist != None and dist < closest_distance):
-                    closest_distance = dist
-            if (closest_distance != None):
-                mu_arr.append(closest_distance)
-            else:
-                mu_arr.append(0)
-            sigma_arr.append(self.distance_error)
-        mu_tensor = torch.Tensor(mu_arr).to(z.device)
-        sigma_tensor = torch.Tensor(sigma_arr).to(z.device)
-        mu = mu_tensor.reshape(1, num_points, 1)
-        sigma = sigma_tensor.reshape(1, num_points, 1)
-        return mu, sigma
+        return self.propogation_functions(x, z)
 
-
+        
 
 if (__name__ == "__main__"):
     decoder = Decoder(7, 6, 0, 1)
