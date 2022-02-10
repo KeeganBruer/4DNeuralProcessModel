@@ -87,7 +87,7 @@ class DecoderGradFunction(torch.autograd.Function):
         #print(mu_grad_output, sigma_grad_output)
         learned_z, = ctx.saved_tensors
         print(ctx.needs_input_grad)
-        target_z = [0, 0, 2, 1, 0, 0.1, 0, 4, 0, 5, 1, 0, -0.1, -1]
+        target_z = [0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]
         z_error = []
         for i in range(0, len(target_z)):
         	z_error.append(target_z[i] - learned_z[i])
