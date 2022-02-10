@@ -85,7 +85,8 @@ class DecoderGradFunction(torch.autograd.Function):
         """
         print("Custom Backwards")
         #print(mu_grad_output, sigma_grad_output)
-        learned_z, = ctx.saved_tensors
+        batch_learned_z, = ctx.saved_tensors
+        learned_z = batch_learned_z[0]
         print(ctx.needs_input_grad)
         target_z = [0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]
         z_error = []
