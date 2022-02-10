@@ -86,8 +86,17 @@ class DecoderGradFunction(torch.autograd.Function):
         print("Custom Backwards")
         #print(mu_grad_output, sigma_grad_output)
         learned_z, = ctx.saved_tensors
+        print(ctx.needs_input_grad)
+        target_z = [0, 0, 2, 1, 0, 0.1, 0, 4, 0, 5, 1, 0, -0.1, -1]
+        z_error = []
+        for i in range(0, len(target_z)):
+        	z_error.append(target_z[i] - learned_z[i])
         
         return (
-            torch.autograd.Variable(torch.tensor([[10 for x in range(12)]]).type(torch.FloatTensor).to(learned_z.device), requires_grad=True), 
-            torch.autograd.Variable(torch.tensor([[10 for x in range(12)]]).type(torch.FloatTensor).to(learned_z.device), requires_grad=True)
+        	torch.autograd.Variable(), #X input requires no gradient
+        	torch.autograd.Variable(torch.tensor([z_error]).type(torch.FloatTensor).to(learned_z.device), requires_grad=True)
         )
+        
+        
+        
+        
