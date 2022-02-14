@@ -1,7 +1,8 @@
 import torch
 from neural_processes.ray_tracing.ray_tracing import Ray, Sphere, get_closest_intersection_distance
 params = None
-
+sphere_radius = 1
+distance_error = 0.002
 
 
 class DecoderGradFunction(torch.autograd.Function):
@@ -10,24 +11,20 @@ class DecoderGradFunction(torch.autograd.Function):
     torch.autograd.Function and implementing the forward and backward passes
     which operate on Tensors.
     """
-    params = None
-    
-    @classmethod
-    def set_params(self, x_dim, sphere_radius, distance_error):
-	    self.params = (x_dim, sphere_radius, distance_error)
-
-    @classmethod
-    def forward(self, ctx, x, z):
+  
+    @staticmethod
+    def forward(ctx, x, z):
         """
         In the forward pass we receive a Tensor containing the input and return
         a Tensor containing the output. ctx is a context object that can be used
         to stash information for backward computation. You can cache arbitrary
         objects for use in the backward pass using the ctx.save_for_backward method.
         """
-        x_dim, sphere_radius, distance_error = self.params
+
         print("Custom Forward")
         ctx.save_for_backward(z)
-        batch_size, num_points, _ = x.size()
+        batch_size, num_points, x_dim = x.size()
+        print(x.size())
         z_in = z[0]
         # Repeat z, so it can be concatenated with every x. This changes shape
         # from (batch_size, z_dim) to (batch_size, num_points, z_dim)
@@ -68,16 +65,16 @@ class DecoderGradFunction(torch.autograd.Function):
             else:
                 mu_arr.append(0)
             sigma_arr.append(distance_error)
-        mu_tensor = torch.Tensor(mu_arr).to(z.device)
-        sigma_tensor = torch.tensor(sigma_arr, requires_grad=True).to(z.device)
+        mu_tensor = torch.tensor(mu_arr).to(z.device)
+        sigma_tensor = torch.tensor(sigma_arr).to(z.device)
 
         mu = mu_tensor.reshape(1, num_points, 1)
         sigma = sigma_tensor.reshape(1, num_points, 1)
 
         return mu, sigma
 
-    @classmethod
-    def backward(self, ctx, mu_grad_output, sigma_grad_output):
+    @staticmethod
+    def backward(ctx, mu_grad_output, sigma_grad_output):
         """
         In the backward pass we receive a Tensor containing the gradient of the loss
         with respect to the output, and we need to compute the gradient of the loss
@@ -85,18 +82,22 @@ class DecoderGradFunction(torch.autograd.Function):
         """
         print("Custom Backwards")
         #print(mu_grad_output, sigma_grad_output)
-        batch_learned_z, = ctx.saved_tensors
-        learned_z = batch_learned_z[0]
+        learned_z, = ctx.saved_tensors
+        learned_z.requires_grad_(True)
+        print(learned_z.requires_grad)
         print(ctx.needs_input_grad)
-        target_z = [0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]
-        z_error = []
-        for i in range(0, len(target_z)):
-        	z_error.append(target_z[i] - learned_z[i])
-        
+        target_z = torch.tensor([[0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]], requires_grad=True).to(learned_z.device)
+        z_error = target_z - learned_z
+	
+
+        return (torch.tensor(0).to(learned_z.device), z_error)
+
+        """
         return (
         	torch.autograd.Variable(), #X input requires no gradient
         	torch.autograd.Variable(torch.tensor([z_error]).type(torch.FloatTensor).to(learned_z.device), requires_grad=True)
         )
+        """
         
         
         

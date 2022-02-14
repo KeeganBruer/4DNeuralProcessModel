@@ -127,7 +127,6 @@ class Decoder(nn.Module):
         self.number_of_spheres = self.z_dim / self.z_sphere_dim
         self.distance_error = 0.002 #Kinect Camera Error
         
-        DecoderGradFunction.set_params(self.x_dim, self.sphere_radius, self.distance_error)
         self.propogation_functions = DecoderGradFunction.apply
 
 
