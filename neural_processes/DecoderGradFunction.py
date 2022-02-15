@@ -22,6 +22,7 @@ class DecoderGradFunction(torch.autograd.Function):
         """
 
         print("Custom Forward")
+        z.retain_grad()
         ctx.save_for_backward(z)
         batch_size, num_points, x_dim = x.size()
         print(x.size())
@@ -70,7 +71,8 @@ class DecoderGradFunction(torch.autograd.Function):
 
         mu = mu_tensor.reshape(1, num_points, 1)
         sigma = sigma_tensor.reshape(1, num_points, 1)
-
+        mu.requires_grad_(True)
+        sigma.requires_grad_(True)
         return mu, sigma
 
     @staticmethod
@@ -83,13 +85,21 @@ class DecoderGradFunction(torch.autograd.Function):
         print("Custom Backwards")
         #print(mu_grad_output, sigma_grad_output)
         learned_z, = ctx.saved_tensors
-        learned_z.requires_grad_(True)
-        print(learned_z.requires_grad)
-        print(ctx.needs_input_grad)
-        target_z = torch.tensor([[0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]], requires_grad=True).to(learned_z.device)
-        z_error = target_z - learned_z
-	
 
+        print(learned_z.requires_grad)
+        print(learned_z.grad)
+        print(ctx.needs_input_grad)
+        target_z = torch.tensor([[0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]]).to(learned_z.device)
+
+        z_error = torch.sub(target_z, learned_z)
+
+        print(learned_z)
+        print(target_z)
+        print(z_error)
+        #learned_z.backward(z_error)
+
+        #grad = torch.autograd.grad(outputs=target_z, grad_outputs=z_error, inputs=learned_z)
+        #print(grad)
         return (torch.tensor(0).to(learned_z.device), z_error)
 
         """

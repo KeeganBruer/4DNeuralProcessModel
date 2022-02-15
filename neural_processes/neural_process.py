@@ -117,6 +117,7 @@ class NeuralProcess(nn.Module):
             q_target = Normal(mu_target, sigma_target)
             q_context = Normal(mu_context, sigma_context)
             z_sample = q_target.rsample()
+            z_sample.requires_grad_(True)
             # Get parameters of output distribution
             y_pred_mu, y_pred_sigma = self.xz_to_y(x_target, z_sample)
             p_y_pred = Normal(y_pred_mu, y_pred_sigma)

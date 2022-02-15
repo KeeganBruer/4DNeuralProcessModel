@@ -36,7 +36,7 @@ def run_training(config):
 
 
     # Define optimizer and trainer
-    optimizer = torch.optim.Adam(neuralprocess.parameters(), lr=3e-4)
+    optimizer = torch.optim.Adam(neuralprocess.parameters(), lr=3e-10)
     np_trainer = NeuralProcessTrainer(device, neuralprocess, optimizer,
                                       num_context_range=num_context_range,
                                       num_extra_target_range=num_extra_target_range, print_freq=1)
