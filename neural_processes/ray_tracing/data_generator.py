@@ -33,6 +33,7 @@ for t in range(0, total_frames+1):
                 ray.distance = dist
         if (ray.distance == None):
             ray.distance = 0
+        ray.distance = ray.distance / ray_max_dist
         ray_frame.append(ray)
     ray_frames.append(ray_frame)
 

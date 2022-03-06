@@ -97,9 +97,10 @@ class NeuralProcessTrainer():
                         self.neural_process(x_context, y_context, x_target, y_target)
 
                 loss = self._loss(p_y_pred, y_target, q_target, q_context)
+                print("pred", loss)
                 loss.backward()
                 self.optimizer.step()
-
+                
                 epoch_loss += loss.item()
 
                 self.steps += 1
@@ -140,6 +141,7 @@ class NeuralProcessTrainer():
         """
         # Log likelihood has shape (batch_size, num_target, y_dim). Take mean
         # over batch and sum over number of targets and dimensions of y
+
         log_likelihood = p_y_pred.log_prob(y_target).mean(dim=0).sum()
         # KL has shape (batch_size, r_dim). Take mean over batch and sum over
         # r_dim (since r_dim is dimension of normal distribution)

@@ -156,7 +156,7 @@ class Decoder(nn.Module):
 
         #print(batch_size, num_points)
         #z.backward(torch.Tensor([[1 for x in range(0, 12)]]).to(z.device), retain_graph=True)
-        
+        print("hey",z)
         return self.propogation_functions(x, z)
 
         

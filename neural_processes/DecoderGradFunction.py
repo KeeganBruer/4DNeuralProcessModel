@@ -23,10 +23,14 @@ class DecoderGradFunction(torch.autograd.Function):
 
         print("Custom Forward")
         z.retain_grad()
+        
         ctx.save_for_backward(z)
+
         batch_size, num_points, x_dim = x.size()
         print(x.size())
         z_in = z[0]
+        
+        print(z_in)
         # Repeat z, so it can be concatenated with every x. This changes shape
         # from (batch_size, z_dim) to (batch_size, num_points, z_dim)
         #print(z_in)
@@ -43,12 +47,12 @@ class DecoderGradFunction(torch.autograd.Function):
                 sphere = Sphere(sph_center, sphere_radius, sph_vec)
                 spheres_from_z.append(sphere)
         
-        error = Sphere([0, 0, 1], 1, [0, 0.1, 0]).get_error_from(spheres_from_z[0])
+        error = Sphere([0, 0, 2], 1, [0, 0.1, 0]).get_error_from(spheres_from_z[0])
         error2 = Sphere([4, 0, 5], 1, [0, -0.1, -1]).get_error_from(spheres_from_z[1])
-        print("Distance from learned Z to target Z center - 1st   {}".format(error["center_error_length"]))
-        print("Distance from learned Z to target Z velocity - 1st {}".format(error["velocity_error_length"]))
-        print("Distance from learned Z to target Z center - 2nd   {}".format(error["center_error_length"]))
-        print("Distance from learned Z to target Z velocity - 2nd {}".format(error["velocity_error_length"]))
+        #print("Distance from learned Z to target Z center - 1st   {}".format(error["center_error"]))
+        #print("Distance from learned Z to target Z velocity - 1st {}".format(error["velocity_error"]))
+        #print("Distance from learned Z to target Z center - 2nd   {}".format(error["center_error_length"]))
+        #print("Distance from learned Z to target Z velocity - 2nd {}".format(error["velocity_error_length"]))
         mu_arr = []
         sigma_arr = []
         for i in range(0, len(x_flat)): #For Each Ray
@@ -66,13 +70,13 @@ class DecoderGradFunction(torch.autograd.Function):
             else:
                 mu_arr.append(0)
             sigma_arr.append(distance_error)
-        mu_tensor = torch.tensor(mu_arr).to(z.device)
-        sigma_tensor = torch.tensor(sigma_arr).to(z.device)
+        mu_tensor = torch.tensor(mu_arr).float().to(z.device)
+        sigma_tensor = torch.tensor(sigma_arr).float().to(z.device)
 
         mu = mu_tensor.reshape(1, num_points, 1)
         sigma = sigma_tensor.reshape(1, num_points, 1)
-        mu.requires_grad_(True)
-        sigma.requires_grad_(True)
+
+
         return mu, sigma
 
     @staticmethod
@@ -84,23 +88,25 @@ class DecoderGradFunction(torch.autograd.Function):
         """
         print("Custom Backwards")
         #print(mu_grad_output, sigma_grad_output)
-        learned_z, = ctx.saved_tensors
+        learned_z,  = ctx.saved_tensors
 
-        print(learned_z.requires_grad)
-        print(learned_z.grad)
-        print(ctx.needs_input_grad)
-        target_z = torch.tensor([[0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]]).to(learned_z.device)
+        target_z = torch.tensor([[0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]]).float().to(learned_z.device)
 
-        z_error = torch.sub(target_z, learned_z)
 
-        print(learned_z)
+        
+        z_error = torch.sub(learned_z, target_z)
+
         print(target_z)
+        print(learned_z)
         print(z_error)
-        #learned_z.backward(z_error)
-
+        learned_z.retain_grad()
+        with torch.enable_grad(): 
+                learned_z.backward(z_error,retain_graph=True)
+        print(learned_z.grad)
+        
         #grad = torch.autograd.grad(outputs=target_z, grad_outputs=z_error, inputs=learned_z)
         #print(grad)
-        return (torch.tensor(0).to(learned_z.device), z_error)
+        return (None, learned_z.grad)
 
         """
         return (

@@ -31,12 +31,12 @@ def run_training(config):
         os.makedirs(data_directory)
     print(config)
     # Define neural process for functions...
-    neuralprocess = NeuralProcess(x_dim=7, y_dim=1, r_dim=12, z_dim=12, h_dim=4).to(device)
+    neuralprocess = NeuralProcess(x_dim=7, y_dim=1, r_dim=10000, z_dim=12, h_dim=12).to(device)
     neuralprocess.training = True
 
 
     # Define optimizer and trainer
-    optimizer = torch.optim.Adam(neuralprocess.parameters(), lr=3e-10)
+    optimizer = torch.optim.Adam(neuralprocess.parameters(), lr=3e-5)
     np_trainer = NeuralProcessTrainer(device, neuralprocess, optimizer,
                                       num_context_range=num_context_range,
                                       num_extra_target_range=num_extra_target_range, print_freq=1)
@@ -48,9 +48,9 @@ def run_training(config):
     epoch_history = []
     for epoch in range(epochs):
         print("Epoch {0:3d}:".format(epoch + 1))
-        if not os.path.exists(save_directory + "/epoch{}".format(epoch+1)):
-            os.makedirs(save_directory + "/epoch{}".format(epoch+1))
-        loss = np_trainer.train(data_loader, save_directory=save_directory+"/epoch{}".format(epoch+1))
+        #if not os.path.exists(save_directory + "/epoch{}".format(epoch+1)):
+        #    os.makedirs(save_directory + "/epoch{}".format(epoch+1))
+        loss = np_trainer.train(data_loader)
         epoch_history.append(loss)
         print("Epoch {0:3d}, Loss: {1}".format(epoch + 1, loss))
         # Save losses at every epoch
