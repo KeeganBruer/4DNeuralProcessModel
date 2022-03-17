@@ -146,11 +146,11 @@ def error2targetz(rays, curr_spheres, error):
         	print(dray.distance, err)
         	current_contact = Ray(distance_ray=dray).point_d_along(dray.distance)
         	target_contact = Ray(distance_ray=dray).point_d_along(dray.distance + err)
+        	contact_error = target_contact - current_contact
         	for sphere in curr_spheres:
         		time_progressed_sphere = sphere.play_sphere_forward(dray.time)
-        		print((target_contact-sphere.center).length())
-        	print(i, current_contact)
-        	print(target_contact, "\n")
+        		dist_to_sphere = (target_contact-sphere.center).length()
+        	
         return torch.tensor([[0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]]).float().to(error.device)
         	
        
