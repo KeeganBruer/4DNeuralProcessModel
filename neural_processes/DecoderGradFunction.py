@@ -139,6 +139,7 @@ class DecoderGradFunction(torch.autograd.Function):
         
         
 def error2targetz(rays, curr_spheres, error):
+        timeframe_spheres = {}
         print(len(rays), len(curr_spheres), len(error))
         for i in range(0, len(rays)):
         	dray = rays[i]
@@ -147,10 +148,17 @@ def error2targetz(rays, curr_spheres, error):
         	current_contact = Ray(ray=dray).point_d_along(dray.distance)
         	target_contact = Ray(ray=dray).point_d_along(dray.distance + err)
         	contact_error = target_contact - current_contact
-        	for sphere in curr_spheres:
-        		time_progressed_sphere = sphere.play_sphere_forward(dray.time)
-        		dist_to_sphere = (target_contact-sphere.center).length()
+        	if (timeframe_spheres.get("t"+str(dray.time), None) != None):
+        		time_progressed_spheres = timeframe_spheres.get("t"+str(dray.time))
+        	else:
+        		time_progressed_spheres = [sphere.play_sphere_forward(dray.time) for sphere in curr_spheres]
         	
+        	for sphere in time_progressed_spheres:
+        		dist_to_sphere = (target_contact-sphere.center).length()
+        		print(dist_to_sphere)
+        	
+        	timeframe_spheres["t"+str(dray.time)] = time_progressed_spheres
+        print(timeframe_spheres.keys())
         return torch.tensor([[0, 0, 2, 0, 0.1, 0, 4, 0, 5, 0, -0.1, -1]]).float().to(error.device)
         	
        

@@ -4,7 +4,7 @@
   "r_dim": 512,
   "h_dim": 512,
   "z_dim": 512,
-  "num_context_range": [3, 199],
+  "num_context_range": [3, 399],
   "num_extra_target_range": [0, 199],
   "lr": 4e-5,
   "epochs": 500,
