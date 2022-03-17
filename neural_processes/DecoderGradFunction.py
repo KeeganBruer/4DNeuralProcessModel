@@ -144,8 +144,8 @@ def error2targetz(rays, curr_spheres, error):
         	dray = rays[i]
         	err = error[i].item()
         	print(dray.distance, err)
-        	current_contact = Ray(distance_ray=dray).point_d_along(dray.distance)
-        	target_contact = Ray(distance_ray=dray).point_d_along(dray.distance + err)
+        	current_contact = Ray(ray=dray).point_d_along(dray.distance)
+        	target_contact = Ray(ray=dray).point_d_along(dray.distance + err)
         	contact_error = target_contact - current_contact
         	for sphere in curr_spheres:
         		time_progressed_sphere = sphere.play_sphere_forward(dray.time)
