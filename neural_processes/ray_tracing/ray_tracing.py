@@ -48,13 +48,18 @@ class Vector3:
         return "{0} {1} {2}".format(self.x, self.y, self.z)
 
 class Ray:
-    def __init__(self, origin, time, direction):
+    def __init__(self, origin=None, time=None, direction=None, distance_ray=None):
         self._type_ = "Ray"
-        self.origin = Vector3(*origin)
-        self.time = time
-        self.direction = Vector3(*direction)
+        if (distance_ray != None):
+        	self.origin = distance_ray.origin
+        	self.time = distance_ray.time
+        	self.direction = distance_ray.direction
+        else:
+        	self.origin = Vector3(*origin)
+        	self.time = time
+        	self.direction = Vector3(*direction)
     def point_d_along(self, d):
-        return self.origin + (self.direction * d)
+        return self.origin + (self.direction * int(d))
     def unit(self):
         """
         Returns a copy of the Ray with the direction vector in unit form.
@@ -75,7 +80,7 @@ class DistanceRay(Ray):
             self.time = ray.time
             self.direction = ray.direction
         if origin != None:
-            self.origin = origin
+            self.origin = Vector3(*origin)
         elif (ray == None):
             self.origin = Vector3(0, 0, 0)
         if time != None:
@@ -83,7 +88,7 @@ class DistanceRay(Ray):
         elif (ray == None):
             self.time = 0
         if direction != None:
-            self.direction = direction
+            self.direction = Vector3(*direction)
         elif (ray == None):
             self.direction = Vector3(0, 0, 1)
         self.distance = distance
