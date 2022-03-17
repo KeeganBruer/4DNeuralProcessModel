@@ -48,12 +48,12 @@ class Vector3:
         return "{0} {1} {2}".format(self.x, self.y, self.z)
 
 class Ray:
-    def __init__(self, origin=None, time=None, direction=None, distance_ray=None):
+    def __init__(self, origin=None, time=None, direction=None, ray=None):
         self._type_ = "Ray"
-        if (distance_ray != None):
-        	self.origin = distance_ray.origin
-        	self.time = distance_ray.time
-        	self.direction = distance_ray.direction
+        if (ray != None):
+        	self.origin = ray.origin
+        	self.time = ray.time
+        	self.direction = ray.direction
         else:
         	self.origin = Vector3(*origin)
         	self.time = time
