@@ -24,7 +24,6 @@ class SimulatedAnnealing:
             # if the new solution is not better, accept it with a probability of e^(-cost/temp)
             elif random.uniform(0, 1) < math.exp(cost_diff / self.current_temp):
                 self.current_state = neighbor
-            print("end: {}".format(self.current_state))
             # decrement the temperature
             self.current_temp -= self.alpha
         return self.current_state

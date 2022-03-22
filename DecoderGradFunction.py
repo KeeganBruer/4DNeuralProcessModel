@@ -1,4 +1,5 @@
 import torch
+import numpy
 from neural_processes.ray_tracing.ray_tracing import Ray, Sphere, get_closest_intersection_distance
 from SimulatedAnnealing import SimulatedAnnealing
 params = None
