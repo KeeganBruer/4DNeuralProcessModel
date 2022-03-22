@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from neural_processes.DecoderGradFunction import DecoderGradFunction
+from DecoderGradFunction import DecoderGradFunction
 
 
 
