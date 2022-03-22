@@ -28,7 +28,7 @@ class SimulatedAnnealing:
             if random.uniform(0, 1) < math.exp(-cost_diff / self.current_temp):
                 self.current_state = neighbor
                 continue            
-        return solution
+        return self.current_state
 
     def get_cost(self, state):
         """Calculates cost of the current state."""

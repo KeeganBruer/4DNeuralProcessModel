@@ -1,4 +1,5 @@
 import torch
+import numpy
 from neural_processes.ray_tracing.ray_tracing import Ray, Sphere, get_closest_intersection_distance
 from SimulatedAnnealing import SimulatedAnnealing
 params = None
@@ -100,7 +101,7 @@ class DecoderGradFunction(torch.autograd.Function):
         learned_z,  = ctx.saved_tensors
 
         target_z = torch.tensor(
-            sim_an.anneal(learned_z.numpy()) #anneal numpy version of tensor
+            sim_an.anneal(learned_z.cpu().numpy()) #anneal numpy version of tensor
         ).float().to(learned_z.device)
         
 
