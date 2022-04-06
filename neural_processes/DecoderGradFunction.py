@@ -70,6 +70,7 @@ class DecoderGradFunction(torch.autograd.Function):
             else:
                 mu_arr.append(0)
             sigma_arr.append(distance_error)
+
         mu_tensor = torch.tensor(mu_arr, dtype=torch.float32, requires_grad=True).to(z.device)
         sigma_tensor = torch.tensor(sigma_arr, requires_grad=False).float().to(z.device)
 
@@ -77,6 +78,7 @@ class DecoderGradFunction(torch.autograd.Function):
 
         sigma = sigma_tensor.reshape(1, num_points, 1)
         ctx.save_for_backward(x, z, mu)
+
 
         return mu, sigma
 
