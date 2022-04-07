@@ -5,16 +5,8 @@ from SimulatedAnnealing import SimulatedAnnealing
 params = None
 sphere_radius = 1
 distance_error = 0.002
-def compute_mu_and_sigma(x, z):
-    batch_size, num_points, x_dim = x.size()
-    zbatch_size, z_dim = z.size()
-    # Repeat z, so it can be concatenated with every x. This changes shape
-    # from (batch_size, z_dim) to (batch_size, num_points, z_dim)
-    #print(z_in)
-
-    # Flatten x and z to fit with linear layer
-    x_flat = x.view(batch_size * num_points, x_dim)
-    z_in = z.view(batch_size, z_dim)
+def compute_mu_and_sigma(x_flat, z_in):
+    
 
     spheres_from_z = []
     for j in range(0, len(z_in), 6): #Find closest intersection on every sphere
@@ -84,8 +76,17 @@ class DecoderGradFunction(torch.autograd.Function):
         print("Custom Forward")
         z.retain_grad()
         
-        
-        mu_arr, sigma_arr = compute_mu_and_sigma(x, z)
+        batch_size, num_points, x_dim = x.size()
+        zbatch_size, z_dim = z.size()
+        # Repeat z, so it can be concatenated with every x. This changes shape
+        # from (batch_size, z_dim) to (batch_size, num_points, z_dim)
+        #print(z_in)
+
+        # Flatten x and z to fit with linear layer
+        x_flat = x.view(batch_size * num_points, x_dim)
+        z_in = z.view(batch_size, z_dim)
+
+        mu_arr, sigma_arr = compute_mu_and_sigma(x_flat, z_in)
         mu_tensor = torch.tensor(mu_arr).float().to(z.device)
         sigma_tensor = torch.tensor(sigma_arr).float().to(z.device)
 
@@ -110,8 +111,7 @@ class DecoderGradFunction(torch.autograd.Function):
         learned_z, x, mu_sigma = ctx.saved_tensors
         initial_state = {
             "x": x,
-            "z":learned_z,
-            "target"
+            "z":learned_z
         }
         target_z = torch.tensor(
             sim_an.anneal(initial_state) #anneal numpy version of tensor

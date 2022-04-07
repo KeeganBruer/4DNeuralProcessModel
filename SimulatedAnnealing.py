@@ -15,8 +15,8 @@ class SimulatedAnnealing:
 
         while self.current_temp > self.final_temp:
             ##get neighbor and cost difference
-            neighbor = random.choice(self.get_neighbors(self.current_state))
-            cost_diff = self.get_cost(self.current_state) - self.get_cost(neighbor)
+            neighbor = random.choice(self.get_neighbors(self.current_state, self.current_temp ))
+            cost_diff = self.get_cost(self.current_state, True) - self.get_cost(neighbor, False)
 
             # if the new solution is better, accept it
             if cost_diff > 0:
@@ -28,11 +28,11 @@ class SimulatedAnnealing:
             self.current_temp -= self.alpha
         return self.current_state
 
-    def get_cost(self, state):
+    def get_cost(self, state, isCurrent):
         """Calculates cost of the current state."""
         raise NotImplementedError
         
-    def get_neighbors(self, state):
+    def get_neighbors(self, state, temp):
         """Returns neighbors of the current state"""
         raise NotImplementedError
 if (__name__ == "__main__"):
@@ -40,7 +40,7 @@ if (__name__ == "__main__"):
     def cost(state):
         print(abs(state["cost"]))
         return abs(state["cost"])
-    def neighbor(state):
+    def neighbor(state, temp):
         neighbors = []
         neighbors.append({
             "cost":state["cost"]-1
